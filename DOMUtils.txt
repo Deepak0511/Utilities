@@ -1,0 +1,115 @@
+public static String ConvertDOMDocumentToString(Document InputRequestDocuemt)
+			throws TransformerException {
+		String resultOutStr = null;
+		TransformerFactory tf = TransformerFactory.newInstance();
+		Transformer transformer = tf.newTransformer();
+		transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		transformer.setOutputProperty(OutputKeys.INDENT, "no");
+
+		DOMSource source = new DOMSource(InputRequestDocuemt);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		StreamResult rOut = new StreamResult(out);
+		transformer.transform(source, rOut);
+
+		resultOutStr = rOut.getOutputStream().toString();
+		return resultOutStr;
+	}
+
+	public static String SOAPMessagetoString(SOAPMessage soapResponse)
+			throws TransformerException, SOAPException {
+		String resultOutStr = null;
+		TransformerFactory transformerFactory = TransformerFactory
+				.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+		transformer.setOutputProperty(OutputKeys.INDENT, "no");
+		Source sourceContent = soapResponse.getSOAPPart().getContent();
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		StreamResult rOut = new StreamResult(out);
+		transformer.transform(sourceContent, rOut);
+
+		resultOutStr = rOut.getOutputStream().toString();
+		return resultOutStr;
+	}
+
+	public static Document ConvertSOAPMessagetoDOMdocument(
+			SOAPMessage soapResponse) throws TransformerException,
+			SOAPException {
+		Document document = soapResponse.getSOAPBody()
+				.extractContentAsDocument();
+
+		return document;
+
+	}
+
+	public static Document StringToDOMdocument(String string)
+			throws SAXException, IOException, ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		InputSource strsource = new InputSource(new StringReader(string));
+		Document doc = factory.newDocumentBuilder().parse(strsource);
+
+		return doc;
+
+	}
+	
+	public static String getNodeString(Element element) {
+		String nodeStr = null;
+		DOMImplementationLS lsImpl = (DOMImplementationLS) element
+				.getOwnerDocument().getImplementation().getFeature("LS", "3.0");
+		LSSerializer serializer = lsImpl.createLSSerializer();
+		serializer.getDomConfig()
+				.setParameter("xml-declaration", Boolean.FALSE);
+		nodeStr = serializer.writeToString(element);
+		return nodeStr;
+	}
+
+	public static Document DOMNodetoDocument(Node node)
+			throws ParserConfigurationException {
+
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document newDocument = builder.newDocument();
+		Node importedNode = newDocument.importNode(node, true);
+		newDocument.appendChild(importedNode);
+		return newDocument;
+	}
+
+	public static SOAPMessage getSOAPMessageFromFile(String filename) {
+		String InputXML = null;
+		SOAPMessage message = null;
+		FileReader fr;
+		try {
+			fr = new FileReader(new File(filename));
+
+			BufferedReader br = new BufferedReader(fr);
+			StringBuilder stringBuilder = new StringBuilder();
+
+			while ((InputXML = br.readLine()) != null) {
+				stringBuilder.append(InputXML);
+
+			}
+			br.close();
+
+			MessageFactory factory = MessageFactory.newInstance();
+			message = factory.createMessage(
+					new MimeHeaders(),
+					new ByteArrayInputStream((stringBuilder.toString())
+							.getBytes(Charset.forName("UTF-8"))));
+		} catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		} catch (SOAPException e) {
+
+			e.printStackTrace();
+		}
+
+		return message;
+
+	}
